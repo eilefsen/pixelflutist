@@ -1,24 +1,23 @@
-use std::net::TcpStream;
-
-use graphics::{prelude::*, Image, Pixel};
-use graphics::{Point, Rectangle, Rgb};
-
 mod graphics;
 
+use std::net::TcpStream;
+use std::thread;
+
+use graphics::{prelude::*, Image};
+
 fn main() -> std::io::Result<()> {
-    let mut stream = TcpStream::connect("127.0.0.1:1337")?;
+    thread::scope(|s| {
+        s.spawn(loop_stream);
+        s.spawn(loop_stream);
+        s.spawn(loop_stream);
+    });
+    Ok(())
+}
 
+fn loop_stream() {
+    let mut stream = TcpStream::connect("127.0.0.1:1337").unwrap();
+    let img = Image::from_bmp("./src/pic.bmp").unwrap();
     loop {
-        Rectangle::new(
-            Point::new(0, 0),
-            Point::new(240, 320),
-            Rgb::new(0xff, 0xff, 0xff),
-        )
-        .unwrap()
-        .draw(&mut stream)?;
-
-        Image::from_bmp("./src/pic.bmp")
-            .unwrap()
-            .draw(&mut stream)?;
+        img.draw(&mut stream).unwrap()
     }
 }
