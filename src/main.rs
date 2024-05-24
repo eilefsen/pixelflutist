@@ -12,9 +12,12 @@ use graphics::{prelude::*, Image};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Number of times to greet
+    /// Number of threads and connections to spawn
     #[arg(short, long, default_value_t = 1)]
     threads: u8,
+    /// Number of times to greet
+    #[arg(short, long)]
+    image: String,
 }
 
 fn main() -> std::io::Result<()> {
@@ -22,17 +25,17 @@ fn main() -> std::io::Result<()> {
 
     thread::scope(|s| {
         for _ in 0..args.threads {
-            s.spawn(loop_stream);
+            let img = Image::from_bmp(&args.image).unwrap();
+            s.spawn(move || loop_stream(img));
         }
     });
     Ok(())
 }
 
-fn loop_stream() -> std::io::Result<()> {
+fn loop_stream(to_draw: impl Drawable) -> std::io::Result<()> {
     let mut stream = TcpStream::connect("127.0.0.1:1337").unwrap();
-    let img = Image::from_bmp("./src/pic.bmp").unwrap();
     let mut buf = vec![];
-    img.draw(&mut buf).unwrap();
+    to_draw.draw(&mut buf).unwrap();
     loop {
         stream.write_all(buf.as_slice())?;
     }
