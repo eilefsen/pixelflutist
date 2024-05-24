@@ -1,5 +1,6 @@
 use super::{Drawable, Pixel, Point};
 
+use std::io::Write;
 use std::net::TcpStream;
 use std::path::Path;
 
@@ -23,14 +24,14 @@ impl Image {
     }
 }
 impl Drawable for Image {
-    fn draw(&self, stream: &mut TcpStream) -> std::io::Result<()> {
+    fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()> {
         let height = self.img.get_height();
         let width = self.img.get_width();
 
         for x in self.position.x..(self.position.x + width) {
             for y in self.position.y..(self.position.y + height) {
                 let px = self.img.get_pixel(x, y);
-                Pixel::new(x, y, px.into()).draw(stream)?;
+                Pixel::new(x, y, px.into()).draw(writer)?;
             }
         }
 

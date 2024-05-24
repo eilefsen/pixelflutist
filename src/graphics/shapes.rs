@@ -1,5 +1,5 @@
 use super::{ConflictingPointError, Drawable, Pixel, Point, Rgb, Size};
-use std::net::TcpStream;
+use std::{io::Write, net::TcpStream};
 
 #[derive(Default)]
 pub struct Rectangle {
@@ -35,7 +35,7 @@ impl Rectangle {
     }
 }
 impl Drawable for Rectangle {
-    fn draw(&self, stream: &mut TcpStream) -> std::io::Result<()> {
+    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
         for x in self.top_left_corner.x..self.bottom_right_corner.x {
             for y in self.top_left_corner.y..self.bottom_right_corner.y {
                 Pixel::new(x, y, self.color).draw(stream)?;

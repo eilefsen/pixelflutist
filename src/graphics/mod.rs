@@ -21,7 +21,7 @@ impl fmt::Display for ConflictingPointError {
 }
 
 pub trait Drawable {
-    fn draw(&self, stream: &mut TcpStream) -> std::io::Result<()>;
+    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()>;
 }
 
 #[derive(Default)]
@@ -38,7 +38,7 @@ impl Pixel {
     }
 }
 impl Drawable for Pixel {
-    fn draw(&self, stream: &mut TcpStream) -> std::io::Result<()> {
+    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
         let s = format!(
             "PX {} {} {}\n",
             self.point.x,
