@@ -3,8 +3,7 @@ use std::io::Write;
 
 #[derive(Default)]
 pub struct Rectangle {
-    top_left_corner: Point,
-    bottom_right_corner: Point,
+    position: Point,
     size: Size,
     color: Rgb,
 }
@@ -23,11 +22,14 @@ impl Rectangle {
         let size = Size::new(x, y);
 
         Ok(Rectangle {
-            top_left_corner,
-            bottom_right_corner,
+            position: top_left_corner,
             size,
             color,
         })
+    }
+
+    pub fn set_position(&mut self, point: Point) {
+        self.position = point;
     }
 
     pub fn size(&self) -> Size {
@@ -36,9 +38,9 @@ impl Rectangle {
 }
 impl Drawable for Rectangle {
     fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
-        for x in self.top_left_corner.x..self.bottom_right_corner.x {
-            for y in self.top_left_corner.y..self.bottom_right_corner.y {
-                Pixel::new(x, y, self.color).draw(stream)?;
+        for x in self.position.x..self.size.x {
+            for y in self.position.y..self.size.y {
+                Pixel::new(x + self.position.x, y + self.position.y, self.color).draw(stream)?;
             }
         }
         Ok(())

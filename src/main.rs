@@ -6,7 +6,7 @@ use std::thread;
 
 use clap::Parser;
 
-use graphics::{prelude::*, Image};
+use graphics::{prelude::*, Image, Point};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -24,8 +24,10 @@ fn main() -> std::io::Result<()> {
     let args = Args::parse();
 
     thread::scope(|s| {
-        for _ in 0..args.threads {
-            let img = Image::from_bmp(&args.image).unwrap();
+        for i in 0..args.threads {
+            let i: u32 = i.into();
+            let mut img = Image::from_bmp(&args.image).unwrap();
+            img.set_position(Point::new(i * 100, i * 20));
             s.spawn(move || loop_stream(img));
         }
     });

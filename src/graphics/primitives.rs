@@ -1,3 +1,40 @@
+use std::io::Write;
+
+use super::Drawable;
+
+#[derive(Default)]
+pub struct Pixel {
+    pub position: Point,
+    pub color: Rgb,
+}
+impl Pixel {
+    pub fn new(x: u32, y: u32, color: Rgb) -> Self {
+        Pixel {
+            position: Point { x, y },
+            color,
+        }
+    }
+    pub fn set_position(&mut self, point: Point) {
+        self.position = point;
+    }
+    pub fn set_color(&mut self, color: Rgb) {
+        self.color = color;
+    }
+}
+impl Drawable for Pixel {
+    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
+        let s = format!(
+            "PX {} {} {}\n",
+            self.position.x,
+            self.position.y,
+            self.color.fmt_hex()
+        );
+        let _ = stream.write(s.as_bytes())?;
+
+        Ok(())
+    }
+}
+
 #[derive(Default, Clone, Copy)]
 pub struct Size {
     pub x: u32,

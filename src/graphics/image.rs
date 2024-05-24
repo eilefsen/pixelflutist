@@ -28,10 +28,10 @@ impl Drawable for Image {
         let height = self.img.get_height();
         let width = self.img.get_width();
 
-        for x in self.position.x..(self.position.x + width) {
-            for y in self.position.y..(self.position.y + height) {
+        for x in 0..width {
+            for y in 0..height {
                 let px = self.img.get_pixel(x, y);
-                Pixel::new(x, y, px.into()).draw(writer)?;
+                Pixel::new(x + self.position.x, y + self.position.y, px.into()).draw(writer)?;
             }
         }
 
