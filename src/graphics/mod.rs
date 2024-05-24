@@ -5,8 +5,8 @@ pub mod shapes;
 pub use image::*;
 pub use primitives::*;
 
+use std::fmt;
 use std::io::prelude::*;
-use std::{fmt, net::TcpStream};
 
 pub mod prelude {
     pub use super::Drawable;

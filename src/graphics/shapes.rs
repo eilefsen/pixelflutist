@@ -1,5 +1,5 @@
 use super::{ConflictingPointError, Drawable, Pixel, Point, Rgb, Size};
-use std::{io::Write, net::TcpStream};
+use std::io::Write;
 
 #[derive(Default)]
 pub struct Rectangle {

@@ -1,9 +1,9 @@
 use super::{Drawable, Pixel, Point};
 
 use std::io::Write;
-use std::net::TcpStream;
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct Image {
     img: bmp::Image,
     pub position: Point,
