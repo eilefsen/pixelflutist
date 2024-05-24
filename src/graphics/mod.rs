@@ -1,5 +1,6 @@
-use bmp;
-use std::error::Error;
+mod basics;
+pub use basics::*;
+
 use std::io::prelude::*;
 use std::path::Path;
 use std::{fmt, net::TcpStream};
@@ -7,10 +8,6 @@ use std::{fmt, net::TcpStream};
 pub mod prelude {
     pub use super::Drawable;
 }
-
-mod basics;
-
-pub use basics::*;
 
 #[derive(Debug, Clone)]
 pub struct ConflictingPointError;
