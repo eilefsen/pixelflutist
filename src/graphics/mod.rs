@@ -4,6 +4,7 @@ pub mod shapes;
 
 pub use image::*;
 pub use primitives::*;
+pub use shapes::Pixel;
 
 use std::fmt;
 use std::io::prelude::*;

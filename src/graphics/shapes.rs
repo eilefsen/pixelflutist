@@ -1,17 +1,22 @@
-use super::{ConflictingPointError, Drawable, Pixel, Point, Rgb, Size};
+use super::{ConflictingPointError, Drawable, Point, Rgba, Size};
 use std::io::Write;
+
+pub trait Shape {
+    fn set_position(&mut self, point: Point);
+    fn set_color(&mut self, color: Rgba);
+}
 
 #[derive(Default)]
 pub struct Rectangle {
     position: Point,
     size: Size,
-    color: Rgb,
+    color: Rgba,
 }
 impl Rectangle {
     pub fn new(
         top_left_corner: Point,
         bottom_right_corner: Point,
-        color: Rgb,
+        color: Rgba,
     ) -> Result<Self, ConflictingPointError> {
         if top_left_corner.x > bottom_right_corner.x || top_left_corner.y > bottom_right_corner.y {
             return Err(ConflictingPointError);
@@ -43,6 +48,49 @@ impl Drawable for Rectangle {
                 Pixel::new(x + self.position.x, y + self.position.y, self.color).draw(stream)?;
             }
         }
+        Ok(())
+    }
+}
+impl Shape for Rectangle {
+    fn set_position(&mut self, point: Point) {
+        self.position = point;
+    }
+    fn set_color(&mut self, color: Rgba) {
+        self.color = color;
+    }
+}
+
+#[derive(Default, Clone, Copy)]
+pub struct Pixel {
+    pub position: Point,
+    pub color: Rgba,
+}
+impl Pixel {
+    pub fn new(x: u32, y: u32, color: Rgba) -> Self {
+        Pixel {
+            position: Point { x, y },
+            color,
+        }
+    }
+}
+impl Shape for Pixel {
+    fn set_position(&mut self, point: Point) {
+        self.position = point;
+    }
+    fn set_color(&mut self, color: Rgba) {
+        self.color = color;
+    }
+}
+impl Drawable for Pixel {
+    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
+        let s = format!(
+            "PX {} {} {}\n",
+            self.position.x,
+            self.position.y,
+            self.color.fmt_hex()
+        );
+        let _ = stream.write(s.as_bytes())?;
+
         Ok(())
     }
 }

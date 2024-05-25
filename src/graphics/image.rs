@@ -1,4 +1,4 @@
-use super::{Drawable, Pixel, Point, Rgb, Size};
+use super::{Drawable, Pixel, Point, Rgba, Size};
 
 use std::io::Write;
 use std::path::Path;
@@ -7,7 +7,7 @@ use std::path::Path;
 pub struct Image {
     position: Point,
     size: Size,
-    data: Vec<Rgb>,
+    data: Vec<Rgba>,
 }
 impl Image {
     pub fn from_bmp<P>(path: P) -> bmp::BmpResult<Self>
@@ -18,11 +18,11 @@ impl Image {
         let size = Size::new(img.get_width(), img.get_height());
         let position = Point::default();
 
-        let mut data: Vec<Rgb> = Vec::with_capacity((size.x * size.y) as usize);
+        let mut data: Vec<Rgba> = Vec::with_capacity((size.x * size.y) as usize);
 
         for (x, y) in img.coordinates() {
             let px = img.get_pixel(x, y);
-            data.push(Rgb::from(px));
+            data.push(Rgba::from(px));
         }
 
         Ok(Image {
@@ -42,11 +42,11 @@ impl Image {
     pub fn coordinates(&self) -> ImageIndex {
         ImageIndex::new(self.size)
     }
-    pub fn set_pixel(&mut self, position: Point, px: Rgb) {
+    pub fn set_pixel(&mut self, position: Point, px: Rgba) {
         let mut _x = self.data[self.get_pixel_location(position)];
         _x = px;
     }
-    pub fn get_pixel(&self, position: Point) -> Rgb {
+    pub fn get_pixel(&self, position: Point) -> Rgba {
         self.data[self.get_pixel_location(position)]
     }
     fn get_pixel_location(&self, position: Point) -> usize {
