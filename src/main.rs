@@ -1,9 +1,8 @@
 mod graphics;
 
+use std::fs::File;
 use std::net::TcpStream;
 use std::thread;
-use std::time::Duration;
-use std::{fs::File, io::Write};
 
 use clap::Parser;
 
@@ -30,18 +29,14 @@ fn main() -> std::io::Result<()> {
             let gif_file = File::open(&args.image).unwrap();
             let mut gif = Animation::decode_gif(gif_file);
             gif.set_position(Point::new(100, 300));
-            s.spawn(move || loop_stream(gif.clone(), Some(gif.delay_hundreths())));
+            s.spawn(move || loop_stream(gif));
         }
     });
     Ok(())
 }
 
-fn loop_stream(to_draw: impl Drawable, delay_hundreds: Option<u16>) -> std::io::Result<()> {
+fn loop_stream(to_draw: impl Drawable) -> std::io::Result<()> {
     let mut stream = TcpStream::connect("127.0.0.1:1337").unwrap();
-    let delay = match delay_hundreds {
-        Some(n) => Duration::from_millis((n * 10).into()),
-        None => Duration::from_millis(0),
-    };
 
     to_draw.draw_loop(&mut stream)
 }
