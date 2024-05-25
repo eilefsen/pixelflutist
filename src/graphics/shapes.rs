@@ -33,10 +33,6 @@ impl Rectangle {
         })
     }
 
-    pub fn set_position(&mut self, point: Point) {
-        self.position = point;
-    }
-
     pub fn size(&self) -> Size {
         self.size
     }
@@ -57,6 +53,9 @@ impl Drawable for Rectangle {
         loop {
             writer.write_all(buf.as_slice())?;
         }
+    }
+    fn set_position(&mut self, point: Point) {
+        self.position = point;
     }
 }
 impl Shape for Rectangle {
@@ -100,6 +99,9 @@ impl Drawable for Pixel {
         let _ = stream.write(s.as_bytes())?;
 
         Ok(())
+    }
+    fn set_position(&mut self, point: Point) {
+        self.position = point;
     }
     fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()> {
         let mut buf = vec![];

@@ -66,9 +66,6 @@ impl Image {
             data,
         })
     }
-    pub fn set_position(&mut self, point: Point) {
-        self.position = point;
-    }
 
     // Shamelessly ripping off bmp::Image struct implementation
     // rust-bmp
@@ -105,6 +102,9 @@ impl Drawable for Image {
         loop {
             writer.write_all(buf.as_slice())?;
         }
+    }
+    fn set_position(&mut self, point: Point) {
+        self.position = point;
     }
 }
 

@@ -27,9 +27,8 @@ fn main() -> std::io::Result<()> {
         for _ in 0..args.threads {
             // let mut img = Image::from_bmp(&args.image).unwrap();
             let gif_file = File::open(&args.image).unwrap();
-            let mut gif = Animation::decode_gif(gif_file);
-            gif.set_position(Point::new(100, 300));
-            s.spawn(move || loop_stream(gif));
+            let mut gif = Animation::decode_gif(gif_file).unwrap();
+            gif.set_position(Point::new(args.x, args.y));
         }
     });
     Ok(())
