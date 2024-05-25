@@ -1,12 +1,13 @@
 mod graphics;
 
-use std::io::Write;
 use std::net::TcpStream;
 use std::thread;
+use std::time::Duration;
+use std::{fs::File, io::Write};
 
 use clap::Parser;
 
-use graphics::{prelude::*, Image, Point};
+use graphics::{prelude::*, Animation};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -24,21 +25,22 @@ fn main() -> std::io::Result<()> {
     let args = Args::parse();
 
     thread::scope(|s| {
-        for i in 0..args.threads {
-            let i: u32 = i.into();
-            let mut img = Image::from_bmp(&args.image).unwrap();
-            img.set_position(Point::new(i * 100, i * 20));
-            s.spawn(move || loop_stream(img));
+        for _ in 0..args.threads {
+            // let mut img = Image::from_bmp(&args.image).unwrap();
+            let gif_file = File::open(&args.image).unwrap();
+            let gif = Animation::decode_gif(gif_file);
+            s.spawn(move || loop_stream(gif.clone(), Some(gif.delay_hundreths())));
         }
     });
     Ok(())
 }
 
-fn loop_stream(to_draw: impl Drawable) -> std::io::Result<()> {
+fn loop_stream(to_draw: impl Drawable, delay_hundreds: Option<u16>) -> std::io::Result<()> {
     let mut stream = TcpStream::connect("127.0.0.1:1337").unwrap();
-    let mut buf = vec![];
-    to_draw.draw(&mut buf).unwrap();
-    loop {
-        stream.write_all(buf.as_slice())?;
-    }
+    let delay = match delay_hundreds {
+        Some(n) => Duration::from_millis((n * 10).into()),
+        None => Duration::from_millis(0),
+    };
+
+    to_draw.draw_loop(&mut stream)
 }

@@ -1,7 +1,9 @@
+mod gif;
 mod image;
 mod primitives;
 pub mod shapes;
 
+pub use gif::*;
 pub use image::*;
 pub use primitives::*;
 pub use shapes::Pixel;
@@ -22,5 +24,8 @@ impl fmt::Display for ConflictingPointError {
 }
 
 pub trait Drawable {
-    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()>;
+    // Draws Pixels to writer
+    fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()>;
+    //
+    fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()>;
 }

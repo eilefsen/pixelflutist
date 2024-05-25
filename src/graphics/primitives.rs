@@ -1,7 +1,3 @@
-use std::io::Write;
-
-use super::Drawable;
-
 #[derive(Default, Clone, Copy)]
 pub struct Size {
     pub x: u32,

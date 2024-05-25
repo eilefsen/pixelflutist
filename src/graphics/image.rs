@@ -5,11 +5,46 @@ use std::path::Path;
 
 #[derive(Clone)]
 pub struct Image {
+    data: Vec<Rgba>,
     position: Point,
     size: Size,
-    data: Vec<Rgba>,
 }
 impl Image {
+    pub fn new(data: Vec<Rgba>, position: Point, size: Size) -> Self {
+        Image {
+            data,
+            position,
+            size,
+        }
+    }
+
+    pub fn from_bytes_rgba(b: &[u8], size: Size) -> Self {
+        let data = {
+            let mut vec: Vec<Rgba> = Vec::new();
+            vec.try_reserve_exact(b.len() + size.x as usize * size.y as usize)
+                .expect("OOM");
+            for v in b.chunks_exact(4) {
+                vec.push(Rgba::new(v[0], v[1], v[2], v[3]));
+            }
+            vec.reverse();
+            vec
+        };
+        Image::new(data, Point::default(), size)
+    }
+    pub fn from_bytes_rgb(b: &[u8], size: Size) -> Self {
+        let data = {
+            let mut vec: Vec<Rgba> = Vec::new();
+            vec.try_reserve_exact(b.len() + size.x as usize * size.y as usize)
+                .expect("OOM");
+            for v in b.chunks_exact(4) {
+                vec.push(Rgba::new(v[0], v[1], v[2], 0xff));
+            }
+            vec.reverse();
+            vec
+        };
+        Image::new(data, Point::default(), size)
+    }
+
     pub fn from_bmp<P>(path: P) -> bmp::BmpResult<Self>
     where
         P: AsRef<Path>,
@@ -53,6 +88,7 @@ impl Image {
         ((self.size.y - position.y - 1) * self.size.x + position.x) as usize
     }
 }
+
 impl Drawable for Image {
     fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()> {
         for (x, y) in self.coordinates() {
@@ -61,6 +97,14 @@ impl Drawable for Image {
         }
 
         Ok(())
+    }
+    fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()> {
+        let mut buf = vec![];
+        self.draw(&mut buf)?;
+
+        loop {
+            writer.write_all(buf.as_slice())?;
+        }
     }
 }
 

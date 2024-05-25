@@ -50,6 +50,14 @@ impl Drawable for Rectangle {
         }
         Ok(())
     }
+    fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()> {
+        let mut buf = vec![];
+        self.draw(&mut buf)?;
+
+        loop {
+            writer.write_all(buf.as_slice())?;
+        }
+    }
 }
 impl Shape for Rectangle {
     fn set_position(&mut self, point: Point) {
@@ -92,5 +100,13 @@ impl Drawable for Pixel {
         let _ = stream.write(s.as_bytes())?;
 
         Ok(())
+    }
+    fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()> {
+        let mut buf = vec![];
+        self.draw(&mut buf)?;
+
+        loop {
+            writer.write_all(buf.as_slice())?;
+        }
     }
 }
