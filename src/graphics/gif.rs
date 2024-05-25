@@ -38,14 +38,14 @@ impl Animation {
         }
     }
 
-    pub fn decode_gif(reader: impl Read) -> Self {
+    pub fn decode_gif(reader: impl Read) -> Result<Self, gif::DecodingError> {
         let mut decoder = gif::DecodeOptions::new();
         decoder.set_color_output(gif::ColorOutput::RGBA);
-        let mut decoder = decoder.read_info(reader).unwrap();
+        let mut decoder = decoder.read_info(reader)?;
 
         let mut frames = vec![];
 
-        while let Some(frame) = decoder.read_next_frame().unwrap() {
+        while let Some(frame) = decoder.read_next_frame()? {
             let size = Size::new(frame.width.into(), frame.height.into());
 
             let mut image = match frame.transparent {
@@ -60,7 +60,7 @@ impl Animation {
             frames.push(f);
         }
 
-        Animation::new(frames)
+        Ok(Animation::new(frames))
     }
 
     pub fn set_position(&mut self, pos: Point) {
