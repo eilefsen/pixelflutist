@@ -1,4 +1,4 @@
-use super::{Drawable, Pixel, Point};
+use super::{Drawable, Pixel, Point, Size};
 
 use std::io::Write;
 use std::path::Path;
@@ -6,7 +6,8 @@ use std::path::Path;
 #[derive(Clone)]
 pub struct Image {
     img: bmp::Image,
-    pub position: Point,
+    position: Point,
+    size: Size,
 }
 impl Image {
     pub fn from_bmp<P>(path: P) -> bmp::BmpResult<Self>
@@ -14,9 +15,11 @@ impl Image {
         P: AsRef<Path>,
     {
         let img = bmp::open(path)?;
+        let size = Size::new(img.get_width(), img.get_height());
         Ok(Image {
             img,
             position: Point::default(),
+            size,
         })
     }
     pub fn set_position(&mut self, point: Point) {

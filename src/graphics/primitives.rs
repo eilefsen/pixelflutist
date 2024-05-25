@@ -2,7 +2,7 @@ use std::io::Write;
 
 use super::Drawable;
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct Pixel {
     pub position: Point,
     pub color: Rgb,
