@@ -7,7 +7,7 @@ use std::{fs::File, io::Write};
 
 use clap::Parser;
 
-use graphics::{prelude::*, Animation};
+use graphics::{prelude::*, Animation, Point};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -28,7 +28,8 @@ fn main() -> std::io::Result<()> {
         for _ in 0..args.threads {
             // let mut img = Image::from_bmp(&args.image).unwrap();
             let gif_file = File::open(&args.image).unwrap();
-            let gif = Animation::decode_gif(gif_file);
+            let mut gif = Animation::decode_gif(gif_file);
+            gif.set_position(Point::new(100, 300));
             s.spawn(move || loop_stream(gif.clone(), Some(gif.delay_hundreths())));
         }
     });

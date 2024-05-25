@@ -1,4 +1,7 @@
-use std::io::{Read, Write};
+use std::{
+    io::{Read, Write},
+    time::Duration,
+};
 
 use crate::Drawable;
 
@@ -59,22 +62,51 @@ impl Animation {
 
         Animation::new(frames)
     }
+
+    pub fn set_position(&mut self, pos: Point) {
+        for f in self.frames.as_mut_slice() {
+            f.image.set_position(pos);
+        }
+    }
+
+    fn buffer_frames(&self) -> std::io::Result<Vec<Vec<u8>>> {
+        let mut vec = vec![];
+
+        for f in self.frames.as_slice() {
+            let mut buf = vec![];
+            f.image.draw(&mut buf)?;
+            vec.push(buf);
+        }
+        Ok(vec)
+    }
 }
 
 impl Drawable for Animation {
-    fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
-        for f in self.frames.as_slice() {
-            f.image.draw(stream)?;
+    fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()> {
+        for f in self.buffer_frames()? {
+            let start = std::time::Instant::now();
+            loop {
+                writer.write_all(f.as_slice())?;
+                if start.elapsed() > Duration::from_millis((self.delay_hundreths * 10).into()) {
+                    break;
+                }
+            }
         }
         Ok(())
     }
 
     fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()> {
-        let mut buf = vec![];
-        self.draw(&mut buf)?;
-
+        let buf = self.buffer_frames()?;
         loop {
-            writer.write_all(buf.as_slice())?;
+            for f in buf.clone() {
+                let start = std::time::Instant::now();
+                loop {
+                    writer.write_all(f.as_slice())?;
+                    if start.elapsed() > Duration::from_millis((self.delay_hundreths * 10).into()) {
+                        break;
+                    }
+                }
+            }
         }
     }
 }
