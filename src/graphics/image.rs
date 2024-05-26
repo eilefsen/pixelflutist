@@ -2,7 +2,7 @@ use png::{ColorType, Transformations};
 
 use super::{Drawable, Pixel, Point, Rgba, Size};
 
-use std::io::{self, Cursor, Read, Write};
+use std::io::{self, Read, Write};
 use std::path::Path;
 
 #[derive(Clone)]
@@ -60,7 +60,6 @@ impl Image {
         decoder.set_transformations(Transformations::ALPHA);
         let mut reader = decoder.read_info()?;
 
-        println!("{:?}", reader.output_color_type());
         let mut buf = vec![0; reader.output_buffer_size()];
         let info = reader.next_frame(&mut buf)?;
 
