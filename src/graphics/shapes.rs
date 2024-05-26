@@ -90,6 +90,9 @@ impl Shape for Pixel {
 }
 impl Drawable for Pixel {
     fn draw(&self, stream: &mut dyn Write) -> std::io::Result<()> {
+        if self.color.a == 0 {
+            return Ok(());
+        }
         let s = format!(
             "PX {} {} {}\n",
             self.position.x,
