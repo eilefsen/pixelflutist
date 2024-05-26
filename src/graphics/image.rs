@@ -178,7 +178,7 @@ impl Iterator for ImageIndex {
     }
 }
 
-fn mirror_rows(data: Vec<Rgba>, width: usize) -> Vec<Rgba> {
+fn mirror_rows<T: std::clone::Clone>(data: Vec<T>, width: usize) -> Vec<T> {
     let mut buf = vec![];
     for row in data.clone().chunks_exact_mut(width) {
         row.reverse();
