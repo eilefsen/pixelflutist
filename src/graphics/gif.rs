@@ -63,12 +63,6 @@ impl Animation {
         Ok(Animation::new(frames))
     }
 
-    pub fn set_position(&mut self, pos: Point) {
-        for f in self.frames.as_mut_slice() {
-            f.image.set_position(pos);
-        }
-    }
-
     fn buffer_frames(&self) -> std::io::Result<Vec<Vec<u8>>> {
         let mut vec = vec![];
 
@@ -107,6 +101,11 @@ impl Drawable for Animation {
                     }
                 }
             }
+        }
+    }
+    fn set_position(&mut self, pos: Point) {
+        for f in self.frames.as_mut_slice() {
+            f.image.set_position(pos);
         }
     }
 }
