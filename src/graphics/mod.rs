@@ -26,6 +26,8 @@ impl fmt::Display for ConflictingPointError {
 pub trait Drawable {
     // Draws Pixels to writer
     fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()>;
-    //
+    // Draw pixels in an infinite loop
     fn draw_loop(&self, writer: &mut dyn Write) -> std::io::Result<()>;
+    // sets position
+    fn set_position(&mut self, point: Point);
 }
