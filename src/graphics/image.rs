@@ -21,9 +21,6 @@ impl Image {
     }
 
     pub fn mirror(&mut self) {
-        // for mut row in self.data.chunks_exact_mut(self.size.x as usize) {
-        //     row.reverse();
-        // }
         let data = mirror_rows(self.data.clone(), self.size.x as usize);
         self.data = data;
     }
@@ -64,22 +61,16 @@ impl Image {
         let info = reader.next_frame(&mut buf)?;
 
         let size = Size::new(info.width, info.height);
-        match reader.output_color_type().0 {
-            ColorType::Rgba => {
-                let mut img = Image::from_bytes_rgba(buf.as_slice(), size);
-                img.mirror();
-                Ok(img)
-            }
-            ColorType::Rgb => {
-                let mut img = Image::from_bytes_rgb(buf.as_slice(), size);
-                img.mirror();
-                Ok(img)
-            }
+        let mut img = match reader.output_color_type().0 {
+            ColorType::Rgba => Ok(Image::from_bytes_rgba(buf.as_slice(), size)),
+            ColorType::Rgb => Ok(Image::from_bytes_rgb(buf.as_slice(), size)),
             _ => Err(io::Error::new(
                 io::ErrorKind::Other,
                 format!("Unsupported ColorType: {:?}", reader.output_color_type().0),
             )),
-        }
+        }?;
+        img.mirror();
+        Ok(img)
     }
 
     pub fn from_bmp<P>(path: P) -> bmp::BmpResult<Self>
@@ -187,7 +178,7 @@ impl Iterator for ImageIndex {
     }
 }
 
-pub fn mirror_rows(data: Vec<Rgba>, width: usize) -> Vec<Rgba> {
+fn mirror_rows(data: Vec<Rgba>, width: usize) -> Vec<Rgba> {
     let mut buf = vec![];
     for row in data.clone().chunks_exact_mut(width) {
         row.reverse();
