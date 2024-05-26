@@ -1,6 +1,8 @@
+use png::{ColorType, Transformations};
+
 use super::{Drawable, Pixel, Point, Rgba, Size};
 
-use std::io::Write;
+use std::io::{self, Cursor, Read, Write};
 use std::path::Path;
 
 #[derive(Clone)]
@@ -16,6 +18,14 @@ impl Image {
             position,
             size,
         }
+    }
+
+    pub fn mirror(&mut self) {
+        // for mut row in self.data.chunks_exact_mut(self.size.x as usize) {
+        //     row.reverse();
+        // }
+        let data = mirror_rows(self.data.clone(), self.size.x as usize);
+        self.data = data;
     }
 
     pub fn from_bytes_rgba(b: &[u8], size: Size) -> Self {
@@ -36,13 +46,41 @@ impl Image {
             let mut vec: Vec<Rgba> = Vec::new();
             vec.try_reserve_exact(b.len() + size.x as usize * size.y as usize)
                 .expect("OOM");
-            for v in b.chunks_exact(4) {
+            for v in b.chunks_exact(3) {
                 vec.push(Rgba::new(v[0], v[1], v[2], 0xff));
             }
             vec.reverse();
             vec
         };
         Image::new(data, Point::default(), size)
+    }
+
+    pub fn from_png<R: Read>(source: R) -> io::Result<Self> {
+        let mut decoder = png::Decoder::new(source);
+        decoder.set_transformations(Transformations::ALPHA);
+        let mut reader = decoder.read_info()?;
+
+        println!("{:?}", reader.output_color_type());
+        let mut buf = vec![0; reader.output_buffer_size()];
+        let info = reader.next_frame(&mut buf)?;
+
+        let size = Size::new(info.width, info.height);
+        match reader.output_color_type().0 {
+            ColorType::Rgba => {
+                let mut img = Image::from_bytes_rgba(buf.as_slice(), size);
+                img.mirror();
+                Ok(img)
+            }
+            ColorType::Rgb => {
+                let mut img = Image::from_bytes_rgb(buf.as_slice(), size);
+                img.mirror();
+                Ok(img)
+            }
+            _ => Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("Unsupported ColorType: {:?}", reader.output_color_type().0),
+            )),
+        }
     }
 
     pub fn from_bmp<P>(path: P) -> bmp::BmpResult<Self>
@@ -78,8 +116,13 @@ impl Image {
         let mut _x = self.data[self.get_pixel_location(position)];
         _x = px;
     }
-    pub fn get_pixel(&self, position: Point) -> Rgba {
-        self.data[self.get_pixel_location(position)]
+    pub fn get_pixel(&self, position: Point) -> io::Result<Rgba> {
+        let i = self.get_pixel_location(position);
+
+        self.data.get(i).copied().ok_or(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("Invalid index, {}", i),
+        ))
     }
     fn get_pixel_location(&self, position: Point) -> usize {
         ((self.size.y - position.y - 1) * self.size.x + position.x) as usize
@@ -89,7 +132,7 @@ impl Image {
 impl Drawable for Image {
     fn draw(&self, writer: &mut dyn Write) -> std::io::Result<()> {
         for (x, y) in self.coordinates() {
-            let px = self.get_pixel(Point::new(x, y));
+            let px = self.get_pixel(Point::new(x, y))?;
             Pixel::new(x + self.position.x, y + self.position.y, px).draw(writer)?;
         }
 
@@ -143,4 +186,13 @@ impl Iterator for ImageIndex {
             None
         }
     }
+}
+
+pub fn mirror_rows(data: Vec<Rgba>, width: usize) -> Vec<Rgba> {
+    let mut buf = vec![];
+    for row in data.clone().chunks_exact_mut(width) {
+        row.reverse();
+        buf.extend(row.to_vec())
+    }
+    buf
 }
